@@ -1,12 +1,38 @@
 #include "pch.h"
 #include <iostream>
 
+int getBitrate(std::string filePath);
+
 int main()
 {
-	//Use http://mpgedit.org/mpgedit/mpeg_format/MP3Format.html to undertstand the frame results!
+	std::cout << getBitrate("test.mp3") << std::endl;
+}
 
-	FILE * file = fopen("test.mp3", "r");
-	
+int getBitrate(std::string filePath) {
+
+	//http://mpgedit.org/mpgedit/mpeg_format/MP3Format.html
+
+	int bitrateTable[16][5] = {
+	{0, 0, 0, 0, 0},
+	{32, 32, 32, 32, 8},
+	{64, 48, 40, 48, 16},
+	{96,56,48,56,24},
+	{128, 64, 56, 64, 32},
+	{160, 80, 64, 80, 40},
+	{192, 96, 80, 96, 48},
+	{224, 112, 96, 112,56},
+	{256, 128, 112, 128, 64},
+	{288, 160, 128, 144, 80},
+	{320, 192, 160, 160, 96},
+	{352, 224, 192, 176, 112},
+	{384, 256, 224, 192, 128},
+	{416, 320, 256, 224, 144},
+	{448, 384, 320, 256, 160},
+	{-1, -1, -1, -1, -1}
+	};
+
+	FILE * file = fopen(filePath.c_str(), "r");
+
 	int bytesToRead = 1024 * 12;
 	char * buffer = new char[bytesToRead];
 
@@ -37,11 +63,11 @@ int main()
 		}
 	}
 
-	for (int i = 0; i < 10; i++) 
+	for (int i = 0; i < 10; i++)
 	{
 		if (frames[i] == '\0') break;
 
-		for (int x = 0; x < 10; x++) 
+		for (int x = 0; x < 10; x++)
 		{
 			if (i == x) continue;
 
@@ -70,10 +96,26 @@ int main()
 
 	int * validFrame = frames[currentHit];
 
-	//0: Version 1: Layer 2: Bitrate
-	for (int i = 0; i < 3; i++)
-	{
-		std::cout << validFrame[i] << std::endl;
-	}
+	int version = validFrame[0];
+	int layer = validFrame[1];
+	int bitrateIndex = validFrame[2];
 
+	int column = 0;
+
+	if (version == 3 && layer == 3)
+		column = 0;
+
+	if (version == 3 && layer == 2)
+		column = 1;
+
+	if (version == 3 && layer == 1)
+		column = 2;
+
+	if (version == 2 && layer == 3)
+		column = 3;
+
+	if (version == 2 && layer == 2)
+		column = 4;
+
+	return bitrateTable[bitrateIndex][column];
 }
